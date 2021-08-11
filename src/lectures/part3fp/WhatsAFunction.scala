@@ -34,9 +34,17 @@ object  WhatsAFunction extends App {
       - how to do it
    */
   // 1.
-  val strAdder: (String,String) => String = new Function2[String, String, String] {
-    override def apply(a: String, b: String): String = a+b
+  val strAdder = (a: String, b: String) => a + b
+
+  // 3.
+  val func = new (Int => (Int => Int)) {
+    override def apply(v1: Int): (Int) => Int = {
+      A => A + v1
+    }
   }
+
+  println(func(6)(5)) //curried function
+
 
   println(strAdder("test ", "string"))
 
