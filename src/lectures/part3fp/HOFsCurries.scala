@@ -31,6 +31,7 @@ object HOFsCurries extends App {
 
   // curried functions
   val superAdder: Int => (Int => Int) = (x: Int) => (y: Int) => x + y
+  val superAdderBri: Int => (Int => Int) = x => y => x + y
   val add3 = superAdder(3) // y => 3 + y
   println(add3(10))
   println(superAdder(3)(10))
@@ -56,14 +57,121 @@ object HOFsCurries extends App {
        [1,2,3].zipWith([4,5,6], x * y) => [1 * 4, 2 * 5, 3 * 6] = [4,10,18]
 
       - fold(start)(function) => a value
-      [1,2,3].fold(0)(x+y) = 6
+      [1,2,3].fold(0)(x+y) = 6*/
 
-    2.  toCurry(f: (Int, Int) => Int) => (Int => Int => Int)
-        fromCurry(f: (Int => Int => Int)) => (Int, Int) => Int
+    /*2.  toCurry(f: (Int, Int) => Int) => (Int => Int => Int)
+        fromCurry(f: (Int => Int => Int)) => (Int, Int) => Int*/
 
+  def toCurryBri(f: (Int, Int) => Int): Int => Int => Int = {
+    f1 => f2 => f(f1, f2)
+  }
+
+  def fromCurryBri(f: (Int => Int => Int)): (Int, Int) => Int = {
+    (f1, f2) => f(f1)(f2)
+  }
+
+
+  /*
+  playground:
+  */
+
+
+
+  def t(a: Int, b: Int): Int = 0
+  if(t(4, 5) != 0) println("FAIL!!!")
+
+  def testFunc1(a: Int => (Int => Int)): Int = {
+    a(5)(6)
+    fromCurryBri(a)(5, 6)
+  }
+
+  def testFunc2(a: (Int, Int) => Int): Int = {
+    //all are equal
+    a(5, 6)
+
+    toCurryBri(a)(5)(6)
+
+    val f1 = toCurryBri(a)
+    val f2 = f1(5)
+    f2(6)
+  }
+
+  println("***********")
+  def add: Int => Int => Int = f1 => f2 =>
+    if(f1 == f2)
+      f1
+    else
+      f1 + f2
+
+  println(testFunc1(f1 => f2 => f1 + f2 ))
+  println(testFunc2((f1, f2) => f1 + f2 ))
+  println(testFunc1(add))
+
+
+
+
+    def toCurry(f: (Int, Int) => Int): Int => (Int => Int) = {
+      x => y => f(x, y)
+    }
+
+    def fromCurry(f: (Int => Int => Int)): (Int, Int) => Int = {
+      (x, y) => f(x)(y)
+    }
+
+  def superAdder2: (Int => Int => Int) = toCurry(_ + _)
+  def add4 = superAdder(4)
+  println(add4(17))
+
+  def simpleAdder = fromCurry(superAdder)
+  println(simpleAdder(4,17))
+  println(superAdder(4)(17))
+
+    /*
     3.  compose(f,g) => x => f(g(x))
         andThen(f,g) => x => g(f(x))
-
    */
+  println("COMPOSE")
+  def testFuncA(x: Int) = 5
+  def testFuncB(x: Int) = 7
+
+  /*
+  A = x
+  B = g(x)
+  c = f(g(x))
+   */
+  def composeBri[A, B, C](f: B => C, g: A => B): A => C = (x: A) => f(g(x))
+
+  /*
+  A = x
+  B = f(x)
+  c = g(f(x))
+   */
+  def andThenBri[A, B, C](f: A => B, g: B => C): A => C = (x: A) => g(f(x))
+
+  println(composeBri((x: Int) => x+2, (y: Int) => y*2)(3))
+  println(andThenBri((x: Int) => x+2, (y: Int) => y*2)(3))
+
+  println("***********")
+
+
+
+
+  // FunctionX
+  def compose[A,B,T](f: A => B, g: T => A): T => B =
+    x => f(g(x))
+
+  def andThen[A,B,C](f: A => B, g: B => C): A => C =
+    x => g(f(x))
+
+
+
+  val add2 = (x: Int) => x + 2
+  val times3 = (x: Int) => x * 3
+
+  val composed = compose(add2, times3)
+  val ordered = andThen(add2, times3)
+
+  println(composed(4)) //14
+  println(ordered(4)) //18
 
 }
